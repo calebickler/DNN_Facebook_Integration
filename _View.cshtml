@@ -1,0 +1,189 @@
+@using DotNetNuke.Common;
+@*
+    Cale Bickler
+    3/14/2015
+    Facebook Integration Project
+*@
+
+<link rel="stylesheet" href="Content/bootstrap.min.css" media="all" />
+<script src="http://connect.facebook.net/en_US/all.js#xfbml=1"></script>
+
+<script type="text/javascript">
+
+    /** Start Facebook code **/
+
+    // This is called with the results from from FB.getLoginStatus().
+    function statusChangeCallback(response) {
+        console.log('statusChangeCallback');
+        console.log(response);
+        // The response object is returned with a status field that lets the
+        // app know the current login status of the person.
+        // Full docs on the response object can be found in the documentation
+        // for FB.getLoginStatus().
+        if (response.status === 'connected') {
+            // Logged into your app and Facebook.
+            testAPI();
+        } else if (response.status === 'not_authorized') {
+            // The person is logged into Facebook, but not your app.
+            document.getElementById('status').innerHTML = 'Please log ' +
+            'into this app.';
+        } else {
+            // The person is not logged into Facebook, so we're not sure if
+            // they are logged into this app or not.
+            document.getElementById('status').innerHTML = 'Please log ' +
+            'into Facebook.';
+        }
+    }
+    // This function is called when someone finishes with the Login
+    // Button.  See the onlogin handler attached to it in the sample
+    // code below.
+    function checkLoginState() {
+        FB.getLoginStatus(function (response) {
+            statusChangeCallback(response);
+        });
+    }
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '800536293361510',
+            cookie: true,  // enable cookies to allow the server to access 
+            // the session
+            xfbml: true,  // parse social plugins on this page
+            version: 'v2.2' // use version 2.2
+        });
+        // Now that we've initialized the JavaScript SDK, we call 
+        // FB.getLoginStatus().  This function gets the state of the
+        // person visiting this page and can return one of three states to
+        // the callback you provide.  They can be:
+        //
+        // 1. Logged into your app ('connected')
+        // 2. Logged into Facebook, but not your app ('not_authorized')
+        // 3. Not logged into Facebook and can't tell if they are logged into
+        //    your app or not.
+        //
+        // These three cases are handled in the callback function.
+        FB.getLoginStatus(function (response) {
+            statusChangeCallback(response);
+        });
+    };
+    // Load the SDK asynchronously
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    } (document, 'script', 'facebook-jssdk'));
+    // Here we run a very simple test of the Graph API after login is
+    // successful.  See statusChangeCallback() for when this call is made.
+    function testAPI() {
+        console.log('Welcome!  Fetching your information.... ');
+        FB.api('/me', function (response) {
+            console.log('Successful login for: ' + response.name);
+            document.getElementById('status').innerHTML =
+            'Thanks for logging in, ' + response.name + '!';
+        });
+        getFBData();
+    }
+
+    /** End Facebook code **/
+
+    $(document).ready(function () {
+        $("#FBInfoArea").hide();
+    });
+
+    function getFBData() {
+        //User is logged in
+        $("#loginArea").hide();
+        $("#FBInfoArea").show();
+
+        //Calls the 'me' node in the Facebook API and loops through each responce appending the values to the profileInfo div.
+        //Hometown is a object so requires special case to retrieve value.
+        FB.api('/me', function (response) {
+            if (response && !response.error) {
+                $.each(response, function (name, value) {
+                    if (name === "hometown") {
+                        $("#profileInfo").append("<div class='row'> <strong>" + name.toString() + "</strong> <p>" + value.name.toString() + "</p> </div>");
+                    }
+                    else {
+                        $("#profileInfo").append("<div class='row'> <strong>" + name.toString() + "</strong> <p>" + value.toString() + "</p> </div>");
+                    }
+                });
+            }
+            else {
+                $("#errorTxt").append("<div class='alert alert-danger'>" + JSON.stringify(response) + "</div>");
+            }
+        });
+
+        //Calls the 'me/likes' nodes to get like information.
+        //First each loops through all like objects and second each loops through the like to print values.
+        FB.api('/me/likes', function (response) {
+            console.log(response);
+            if (response && !response.error) {
+                $.each(response.data, function (name, value) {
+                    $("#likes").append("<h4> Like #" + (name + 1).toString() + ":</h4>")
+                    $.each(value, function (name, value) {
+                        $("#likes").append("<div class='row'> <strong>" + name.toString() + "</strong> <p>" + value.toString() + "</p> </div>")
+                    });
+                });
+            }
+            else {
+                $("#errorTxt").append("<div class='alert alert-danger'>" + JSON.stringify(response) + "</div>");
+            }
+        });
+    }
+
+
+    function submitFeed(e) {
+        //Uses the 'me/feed' node to post the message value.
+        var message = $("#feedTxt").val();
+        FB.api(
+            "/me/feed",
+            "POST",
+            {
+                "message": message
+            },
+            function (response) {
+                if (response && !response.error) {
+                    $("#postStatus").append("<p>Posted message to feed!</p>");
+                }
+                else {
+                    $("#errorTxt").append("<div class='alert alert-danger'>" + JSON.stringify(response) + "</div>");
+                }
+            });
+    }
+</script>
+
+<div id="fb-root"></div>
+<div id="loginArea">
+    <div class="row">
+        <fb:login-button scope="public_profile, email, user_hometown, user_likes, user_notes, publish_actions" onlogin="checkLoginState();"></fb:login-button>
+    </div>
+    <div class="row">
+        <div id="status"></div>
+    </div>
+</div>
+
+<div id="FBInfoArea">
+    <div id="FBData">
+        <h4> Profile Data:</h4>
+        <div id="profileInfo"></div>
+        <div id="likes"></div>
+    </div>
+
+    <h4>Enter a message to post to your feed:</h4>
+    <div class="row">
+        <textarea class="col-md-5" id="feedTxt"></textarea>
+    </div>
+    <div class="row">
+        <button type="button" id="postFeedTxt" class="btn btn-success" onClick="submitFeed();">Post to Feed</button>
+    </div>
+    <div class="row">
+        <div id="postStatus"></div>
+    </div>
+</div>
+
+<div id="ErrorArea">
+    <div class="row">
+        <p id="errorTxt"></p>
+    </div>
+</div>
