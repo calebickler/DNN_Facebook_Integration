@@ -2,35 +2,55 @@ Cale Bickler
 3/14/2015
 DNN Facebook integration project
 
+
 Using the module:
+
 
 When first viewing the page it will present a Facebook log in button. Click this button and log in to Facebook 
 and give permission to the site to access your profile data. Once logged in the button will disappear and a list 
 of data about the profile including profile data and likes will display. Below these fields a text area and a button 
 will allow the user to enter a status update from the page.
 
+
 Installing the Module in DNN:
 
+
 Download zipped file.
+
 Create new DNN platform site (if one is not already created).
-Use Nuget to install Bootstrap
+
+Use Nuget to install Bootstrap.
+
 Log in to the DNN Admin account.
+
 Click on Host dropdown at the top and click Extenstions.
+
 Click on Install Extension Wizard and choose the zipped file.
+
 Click next until created.
+
 Now click on Modules dropdown and select Add New Module.
+
 Select Cale Bickler and drag the Facebook Integration module to the page.
+
 Exit edit mode and refresh the page.
+
 Now you will need to use a Facebook app that is using the current URL.
+
 Create or modify a Facebook application and replace the App ID on line 47 of _View.cshtml.
+
 Now the module should work.
 
+
 Helpful Resources:
+
 
 API Explorer: https://developers.facebook.com/tools-and-support/
 Authentication Script:  https://developers.facebook.com/docs/facebook-login/login-flow-for-web/v2.2
 
+
 Implementation Steps:
+
 
 Downloaded web platform installer and installed DNN Platform, which also included SQL Server 2008.
 
